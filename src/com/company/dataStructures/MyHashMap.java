@@ -25,9 +25,11 @@ public class MyHashMap {
     public void setTfidf(double tfidf){
         this.tfidf = tfidf;
     }
+
     public double getTFIDF(){
         return tfidf;
     }
+
     public String getBusinessName(){
         return businessName;
     }
@@ -45,9 +47,7 @@ public class MyHashMap {
         if (size >= capacity){
             resize();
         }
-        int hc = key.hashCode();
-        int index = Math.abs(hc) % map.length;
-        index = Math.abs(index);
+        int index = Math.abs(key.hashCode()) % map.length;
         Term term = new Term(key);
 
         if (map[index] == null){
@@ -83,7 +83,6 @@ public class MyHashMap {
 
     public Term getTerm(String key) {
         int index = Math.abs(key.hashCode()) % map.length;
-        index = Math.abs(index); //is the abs needed here????????????????????????????????????????????????????/
         if (map[index] == null) {
             return null;
         } else {

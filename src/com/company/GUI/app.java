@@ -29,13 +29,14 @@ public class app extends JFrame implements ActionListener {
     private JButton submit;
 
     //File location variables
+    final private String jsonFileLocation = "/10k_business_dataset.txt";
     final private String cleanedFileLocation = "/10k_business_dataset(cleaned).txt";
 
     //limit
     int numOfBusinessesToDisplay = 10;
-    int numOfBusinessesParsed = 10000;
 
-    //myHashmaps is a Hashmap contain all of the individual business hashTables
+    //myHashmaps is a Hashmap contain all the individual business hashTables
+    //allHashmaps is explained in the comment for allToOneHashMap function
     //sortedBusiness is used to list the x most similar businesses (where x is numOfBusinessesToDisplay)
     HashMap<String, MyHashMap> myHashMaps = new HashMap<>();
     MyHashMap allHashmaps = new MyHashMap();
@@ -62,10 +63,11 @@ public class app extends JFrame implements ActionListener {
         setUpPage();
     }
 
-    //Basic page setUp
-    // this will enable the program to halt when the application is closed
-    // adds functionality to the button, designs the text field, adds everything to the JFrame
-    // Sets the JFrame to visible so that it actually displays
+    /**Basic page setUp.
+     * This will enable the program to halt when the application is closed.
+     * Adds functionality to the button, designs the text field, adds everything to the JFrame.
+     * Sets the JFrame to visible so that it actually displays.
+     */
     public void setUpPage(){
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(new FlowLayout());
@@ -85,7 +87,7 @@ public class app extends JFrame implements ActionListener {
         this.setVisible(true);
     }
 
-    //Changes the suggested element based on what is currently typed
+    /**Changes the suggested element in text field based on what is currently typed*/
     public void fillJComboBoxModel(){
         String[] keys = myHashMaps.keySet().toArray(new String[0]);
         for(String elements: keys) {
@@ -95,12 +97,8 @@ public class app extends JFrame implements ActionListener {
         jComboBox.setMaximumRowCount(5);
     }
 
-    //looks over every document (Layer 1)
-    //looks over every index of the hashmap of the business you want to compare to (Layer 2)
-    //looks over every key in an index and runs the TF-IDF calculation on all them
+    /**Runs TF-IDF calculation on every key in the comparator hashmap (the document you want to compare against)*/
     private void makeTfIdf(){
-        Collection<MyHashMap> collection = myHashMaps.values();
-
         //Layer 1
         for(MyHashMap maps: myHashMaps.values()) {
             maps.setTfidf(0);
@@ -115,8 +113,9 @@ public class app extends JFrame implements ActionListener {
         }
     }
 
-    //Puts all of the hashmaps terms into one hashmap
-    //in turn it records the number of documents that each word appears in due to how the myHashmaps put method works
+    /**Puts all of the hashmaps terms into one hashmap,
+     * in turn it records the number of documents that each word appears in due to how the myHashmaps put method works
+     */
     public void allToOneHashmap(){
         //Layer 1
         for(MyHashMap maps: myHashMaps.values()) {
@@ -148,6 +147,7 @@ public class app extends JFrame implements ActionListener {
             labels[i] = new JLabel();
         }
     }
+    //add text to the label
     private void populateLabels(){
         for(int i = 0; i < labels.length; i++) {
             labels[i].setText(sortedBusinesses.get(i).getBusinessName());
@@ -167,6 +167,7 @@ public class app extends JFrame implements ActionListener {
             panels[i].setBounds(0, height * i, width, height);
         }
     }
+    //add labels to the panels
     private void populatePanels(){
         int rgb = 200;
         for (int i = 0; i < panels.length; i++) {
@@ -178,9 +179,13 @@ public class app extends JFrame implements ActionListener {
         jFrame.pack();
     }
 
+    /**
+     * Reads a json file and puts the different objects into their own hashmap.
+     * Stores the information inside an arrayList for sorting later.
+     * */
     private void setHashMaps(){
         try {
-
+            //checks if a cleaned database file exist. If not, it creates one. (cleaned file == removed non-alphanumerics)
             File file;
             file = new File(System.getProperty("user.dir") + cleanedFileLocation);
             if(!file.isFile()) {
@@ -191,12 +196,17 @@ public class app extends JFrame implements ActionListener {
             Scanner getContentKeys;
 
             String business;
+            //each business is on its own line in the file and this reads it as such
+            //this will only work if the json file is in newLine-delimited format
             while (getBusiness.hasNextLine()) {
                 business = getBusiness.nextLine();
                 getContentKeys = new Scanner(business);
                 MyHashMap myHashMap = new MyHashMap();
                 for(int j = 0; getContentKeys.hasNext(); j++){
                     if (j == 3){
+                        //each business is the 4th word and followed by an address for this dataset
+                        //as such we make those checks to find the business names
+                        //THIS IS HACKY, USE Dynamic Json mapping (https://www.baeldung.com/jackson-mapping-dynamic-object)
                         StringBuilder concatBusinessName = new StringBuilder();
                         for (String temp = getContentKeys.next(); !temp.equalsIgnoreCase("address");){
                             concatBusinessName.append(temp).append(" ");
@@ -228,10 +238,9 @@ public class app extends JFrame implements ActionListener {
         sortedBusinesses.sort(sortByTFIDF);
     }
 
-    // Removes
+    // Removes non-alphanumerics from the whole database file and adds spaces where there should be
     public void cleanJsonFile() throws IOException {
 
-        String jsonFileLocation = "/10k_business_dataset.txt";
         File file = new File(System.getProperty("user.dir") + jsonFileLocation);
         FileReader fileReader = new FileReader(file);
         FileWriter fileWriter = new FileWriter(System.getProperty("user.dir") + cleanedFileLocation, false);

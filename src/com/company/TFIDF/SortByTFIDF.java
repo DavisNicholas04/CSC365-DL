@@ -5,7 +5,7 @@ import java.util.Comparator;
 
 public class SortByTFIDF implements Comparator<MyHashMap> {
 
-    //most to least similar sorter
+    // most to least similar sorter
     public int compare(MyHashMap a, MyHashMap b){
         return Double.compare(b.getTFIDF(), a.getTFIDF());
     }
